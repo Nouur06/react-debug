@@ -1,132 +1,92 @@
-import { useMemo, useState } from "react";
-import "./App.css";
+import { useState } from "react";
 
-function Counter({ value, onIncrement, onDecrement }) {
-  return (
-    <section className="card">
-      <h2>Counter</h2>
-      <div className="counter" aria-live="polite">
-        {value}
-      </div>
-      <div className="button-row">
-        <button type="button" onClick={onDecrement}>
-          −
-        </button>
-        <button type="button" onClick={onIncrement}>
-          +
-        </button>
-      </div>
-    </section>
-  );
-}
+const players = [
+  {
+    id: "p1",
+    name: "Luna",
+    role: "Frontend Engineer",
+    score: 94,
+    status: "Focused",
+  },
+  { id: "p2", name: "Marco", role: "Designer", score: 88, status: "Reviewing" },
+  { id: "p3", name: "Ava", role: "QA Analyst", score: 91, status: "Testing" },
+];
 
-function TodoList({ items, onToggleComplete, onAddItem }) {
-  const [draft, setDraft] = useState("");
-  const openCount = items.filter((item) => !item.completed).length;
+function App() {
+  const [selectedId, setSelectedId] = useState("p1");
 
-  function handleSubmit(event) {
-    event.preventDefault();
-    const trimmed = draft.trim();
-    if (!trimmed) return;
-    onAddItem(trimmed);
-    setDraft("");
-  }
+  const selectedPlayer =
+    players.find((player) => player.id === selectedId) ?? players[0];
 
   return (
-    <section className="card">
-      <h2>Todo List</h2>
-      <p className="subtitle">Open tasks: {openCount}</p>
-      <form className="todo-form" onSubmit={handleSubmit}>
-        <input
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          placeholder="Add a task"
-          aria-label="New todo"
-        />
-        <button type="submit">Add</button>
-      </form>
-      <ul className="todo-list">
-        {items.map((item) => (
-          <li key={item.id} className={item.completed ? "completed" : ""}>
-            <label>
-              <input
-                type="checkbox"
-                checked={item.completed}
-                onChange={() => onToggleComplete(item.id)}
-              />
-              <span>{item.text}</span>
-            </label>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
+    <main className="app-shell">
+      <header className="app-header">
+        <p className="eyebrow">Debugging demo</p>
+        <h1>Team performance overview</h1>
+      </header>
 
-function Summary({ count, todos }) {
-  const completedCount = todos.filter((todo) => todo.completed).length;
-  const totalCount = todos.length;
-
-  const taskMessage = useMemo(() => {
-    if (totalCount === 0) return "No tasks yet.";
-    return `${completedCount} of ${totalCount} tasks completed.`;
-  }, [completedCount, totalCount]);
-
-  return (
-    <section className="card summary-card">
-      <h2>Summary</h2>
-      <p>{taskMessage}</p>
-      <p>Counter value: {count}</p>
-    </section>
-  );
-}
-
-export default function App() {
-  const [count, setCount] = useState(0);
-  const [todos, setTodos] = useState([
-    { id: 1, text: "Inspect React DevTools tree", completed: false },
-    { id: 2, text: "Verify props and state", completed: true },
-  ]);
-
-  function handleIncrement() {
-    setCount((current) => current + 1);
-  }
-
-  function handleDecrement() {
-    setCount((current) => current - 1);
-  }
-
-  function handleToggleItem(id) {
-    setTodos((current) =>
-      current.map((item) =>
-        item.id === id ? { ...item, completed: !item.completed } : item,
-      ),
-    );
-  }
-
-  function handleAddItem(text) {
-    setTodos((current) => [
-      ...current,
-      { id: Date.now(), text, completed: false },
-    ]);
-  }
-
-  return (
-    <main id="center">
-      <h1>React Debug Sample</h1>
       <div className="layout">
-        <Counter
-          value={count}
-          onIncrement={handleIncrement}
-          onDecrement={handleDecrement}
+        <PlayerList
+          players={players}
+          selectedId={selectedId}
+          onSelect={setSelectedId}
         />
-        <TodoList
-          items={todos}
-          onToggleComplete={handleToggleItem}
-          onAddItem={handleAddItem}
-        />
+        <PlayerDetail player={selectedPlayer} />
       </div>
-      <Summary count={count} todos={todos} />
     </main>
   );
 }
+
+function PlayerList({ players, selectedId, onSelect }) {
+  return (
+    <aside className="panel">
+      <h2>Team members</h2>
+      <div className="player-list">
+        {players.map((player) => {
+          const isSelected = player.id === selectedId;
+
+          return (
+            <button
+              key={player.id}
+              type="button"
+              className={`player-item ${isSelected ? "selected" : ""}`}
+              onClick={() => onSelect(player.id)}
+            >
+              <span className="player-name">{player.name}</span>
+              <span className="player-role">{player.role}</span>
+            </button>
+          );
+        })}
+      </div>
+    </aside>
+  );
+}
+
+function PlayerDetail({ player }) {
+  const summary = player.score >= 90 ? "Above target" : "Needs support";
+
+  return (
+    <section className="panel detail-panel">
+      <p className="eyebrow">Selected profile</p>
+      <h2>{player.name}</h2>
+      <p className="role">{player.role}</p>
+
+      <div className="stats-grid">
+        <div>
+          <span className="label">Score</span>
+          <strong>{player.score}</strong>
+        </div>
+        <div>
+          <span className="label">Status</span>
+          <strong>{player.status}</strong>
+        </div>
+        <div>
+          <span className="label">Summary</span>
+          <strong>{summary}</strong>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default App;
